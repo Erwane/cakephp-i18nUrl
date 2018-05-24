@@ -1,0 +1,29 @@
+{
+    "name": "erwane/cakephp-i18nUrl",
+    "description": "Translated URL for CakePHP 3.x",
+    "type": "cakephp-plugin",
+    "authors": [
+        {
+            "name": "Erwane Breton",
+            "email": "erwane@phea.fr"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=5.6",
+        "cakephp/cakephp": "~3.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "7.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "I18nUrl\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "I18nUrl\\Test\\": "tests"
+        }
+    }
+}
