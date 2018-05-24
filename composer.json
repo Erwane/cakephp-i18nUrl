@@ -1,5 +1,5 @@
 {
-    "name": "erwane/cakephp-i18nUrl",
+    "name": "erwane/cakephp-i18n-url",
     "description": "Translated URL for CakePHP 3.x",
     "type": "cakephp-plugin",
     "authors": [
