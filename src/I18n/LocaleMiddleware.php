@@ -75,7 +75,7 @@ class LocaleMiddleware
     {
         // Set locale
         $locale = $this->_locales[$lang];
-        I18n::getLocale($locale);
+        I18n::setLocale($locale);
 
         // date format
         DateTimeFormat::setDateTimeFormat(self::$_formats[$locale]['date'], self::$_formats[$locale]['time']);

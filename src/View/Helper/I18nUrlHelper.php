@@ -8,7 +8,7 @@ class I18nUrlHelper extends Helper
 {
     public function byName($name)
     {
-        return ['_name' => $name . '.' . LocaleMiddleware::getLocale(true)];
+        return ['_name' => $name . '.' . $this->getLocale(true)];
     }
 
     public function getLocale($clean = false)
