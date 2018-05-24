@@ -44,7 +44,7 @@ class LocaleMiddleware
             return $next($request, $response);
         }
 
-        $lang = $request->param('lang');
+        $lang = $request->getParam('lang');
         $accepted = $this->isAcceptedLanguage($lang);
 
         if ($lang !== false && $accepted) {
@@ -75,7 +75,7 @@ class LocaleMiddleware
     {
         // Set locale
         $locale = $this->_locales[$lang];
-        I18n::locale($locale);
+        I18n::getLocale($locale);
 
         // date format
         DateTimeFormat::setDateTimeFormat(self::$_formats[$locale]['date'], self::$_formats[$locale]['time']);
@@ -92,10 +92,10 @@ class LocaleMiddleware
     public static function getLocale($clean = false)
     {
         if (!$clean) {
-            return I18n::locale();
+            return I18n::getLocale();
         }
 
-        return strtolower(substr(I18n::locale(), 0, 2));
+        return strtolower(substr(I18n::getLocale(), 0, 2));
     }
 
     /**
@@ -105,7 +105,7 @@ class LocaleMiddleware
      */
     public static function getAlternateLocale($clean = false)
     {
-        if (I18n::locale() === 'fr_FR') {
+        if (I18n::getLocale() === 'fr_FR') {
             return $clean ? 'en' : 'en_US';
         }
 
