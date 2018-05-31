@@ -3,12 +3,11 @@ namespace I18nUrl\Routing;
 
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\Router as CakeRouter;
-use Cake\Routing\RouteBuilder;
 use LogicException;
 
-class Router
+class Router extends CakeRouter
 {
-    private static $_locales = ['en'];
+    public static $locales = ['en'];
 
     private static $_defaultLocale = 'en';
 
@@ -22,7 +21,7 @@ class Router
      */
     public static function setLocales(array $locales)
     {
-        self::$_locales = $locales;
+        self::$locales = $locales;
     }
 
     /**
@@ -32,57 +31,31 @@ class Router
      */
     public static function setDefaultLocale(string $locale)
     {
-        if (array_search($locale, self::$_locales) === false) {
+        if (array_search($locale, self::$locales) === false) {
             throw new LogicException("Locale $locale is not set", 1);
         }
 
         self::$_defaultLocale = $locale;
     }
 
-    public static function connect($routes, $defaults = [], array $options = [])
+    /**
+     * Create a RouteBuilder for the provided path.
+     *
+     * @param string $path The path to set the builder to.
+     * @param array $options The options for the builder
+     * @return \Cake\Routing\RouteBuilder
+     */
+    public static function createRouteBuilder($path, array $options = [])
     {
-        if (!is_array($routes)) {
-            $routes = array_fill_keys(self::$_locales, $routes);
-        }
+        $defaults = [
+            'routeClass' => static::defaultRouteClass(),
+            'extensions' => static::$_defaultExtensions,
+        ];
+        $options += $defaults;
 
-        foreach (self::$_locales as $locale) {
-            // set vars for route
-            $currentDefaults = $defaults;
-            $currentOptions = $options;
-
-            if (!isset($currentOptions['_name'])) {
-                debug('TODO NO ROUTE NAME');
-                exit;
-            }
-
-            $currentOptions['_name'] .= '.' . $locale;
-
-            self::$_routes[] = [
-                ':lang' => $locale,
-                'route' => $routes[$locale],
-                'defaults' => $currentDefaults,
-                'options' => $currentOptions,
-            ];
-        }
-    }
-
-    public static function connectAll()
-    {
-        if (static::$_scopeSet) {
-            return;
-        }
-
-        $routes = self::$_routes;
-
-        CakeRouter::scope('/:lang', function (RouteBuilder $builder) use ($routes) {
-            foreach ($routes as $route) {
-                $builder
-                    ->connect($route['route'], $route['defaults'], $route['options'])
-                    ->setPatterns(['lang' => $route[':lang']]);
-            }
-            $builder->fallbacks(DashedRoute::class);
-        });
-
-        static::$_scopeSet = true;
+        return new RouteBuilder(static::$_collection, $path, [], [
+            'routeClass' => $options['routeClass'],
+            'extensions' => $options['extensions'],
+        ]);
     }
 }
