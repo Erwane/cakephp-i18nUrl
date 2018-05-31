@@ -28,14 +28,13 @@ class RouteBuilder extends CakeRouteBuilder
         }
 
         foreach (Router::$locales as $locale) {
+            if (!isset($options['_name'])) {
+                $options['_name'] = substr(sha1(json_encode($defaults)), 0, 12);
+            }
+
             // set vars for route
             $currentDefaults = $defaults;
             $currentOptions = $options;
-
-            if (!isset($currentOptions['_name'])) {
-                debug('TODO NO ROUTE NAME');
-                exit;
-            }
 
             $currentOptions['_name'] .= '.' . $locale;
 

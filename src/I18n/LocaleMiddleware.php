@@ -2,15 +2,13 @@
 namespace I18nUrl\I18n;
 
 use Cake\I18n\I18n;
-use Cake\Routing\Router;
+use Cake\Routing\Exception\MissingRouteException;
+use I18nUrl\Routing\Router;
 use Ecl\I18n\DateTimeFormat;
 use Locale;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-/**
- * Language middleware
- */
 class LocaleMiddleware
 {
     protected $_locales = ['fr' => 'fr_FR', 'en' => 'en_GB'];
@@ -55,9 +53,15 @@ class LocaleMiddleware
             $lang = $this->getFirstAcceptedLanguage($request);
         }
 
-        // change response location with new lang
-        // debug(Router::url(['lang' => $lang], true));exit;
-        $r = $response->withLocation(Router::url(['lang' => $lang], true));
+        try {
+            $ary = array_merge(['controller' => $request->controller, 'action' => $request->action, 'lang' => $lang], $request->pass);
+            $newLocation = Router::url($ary, true);
+
+            $r = $response->withLocation($newLocation);
+        } catch (MissingRouteException $e) {
+            debug($e);
+            exit;
+        }
 
         // return new response object with location
         return $response = $r;
