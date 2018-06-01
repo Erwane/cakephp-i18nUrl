@@ -2,6 +2,7 @@
 namespace I18nUrl\I18n;
 
 use Cake\I18n\I18n;
+use Cake\Http\Exception\NotFoundException;
 use Cake\Routing\Exception\MissingRouteException;
 use I18nUrl\Routing\Router;
 use Ecl\I18n\DateTimeFormat;
@@ -11,6 +12,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class LocaleMiddleware
 {
+    private $_loop = 0;
+
     protected $_locales = ['fr' => 'fr_FR', 'en' => 'en_GB'];
 
     protected static $_formats = [
@@ -42,6 +45,12 @@ class LocaleMiddleware
             return $next($request, $response);
         }
 
+        $this->_loop = (int)$request->session()->read('I18nUrl.loop');
+
+        if ($this->_loop > 1) {
+            throw new NotFoundException();
+        }
+
         $lang = $request->getParam('lang');
         $accepted = $this->isAcceptedLanguage($lang);
 
@@ -56,6 +65,10 @@ class LocaleMiddleware
         try {
             $ary = array_merge(['controller' => $request->controller, 'action' => $request->action, 'lang' => $lang], $request->pass);
             $newLocation = Router::url($ary, true);
+
+            // Antiloop system
+            $this->_loop++;
+            $request->session()->write('I18nUrl.loop', $this->_loop);
 
             $r = $response->withLocation($newLocation);
         } catch (MissingRouteException $e) {
