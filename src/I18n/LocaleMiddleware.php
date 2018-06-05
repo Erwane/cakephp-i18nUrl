@@ -45,11 +45,7 @@ class LocaleMiddleware
             return $next($request, $response);
         }
 
-        $this->_loop = (int)$request->session()->read('I18nUrl.loop');
-
-        if ($this->_loop > 1) {
-            throw new NotFoundException();
-        }
+        $this->_loop = (int)$request->getSession()->read('I18nUrl.loop');
 
         $lang = $request->getParam('lang');
         $accepted = $this->isAcceptedLanguage($lang);
@@ -62,13 +58,17 @@ class LocaleMiddleware
             $lang = $this->getFirstAcceptedLanguage($request);
         }
 
+        if ($this->_loop > 1) {
+            return $this->_setLocale($lang, $next, $request, $response);
+        }
+
         try {
             $ary = array_merge(['controller' => $request->controller, 'action' => $request->action, 'lang' => $lang], $request->pass);
             $newLocation = Router::url($ary, true);
 
             // Antiloop system
             $this->_loop++;
-            $request->session()->write('I18nUrl.loop', $this->_loop);
+            $request->getSession()->write('I18nUrl.loop', $this->_loop);
 
             $r = $response->withLocation($newLocation);
         } catch (MissingRouteException $e) {
