@@ -62,10 +62,26 @@ class Router extends CakeRouter
 
     public static function url($url = null, $full = false)
     {
-        if (is_array($url) && isset($url['_name'])) {
-            $url['_name'] = $url['_name'] . '.' . LocaleMiddleware::getLocale(true);
+        if (is_array($url)) {
+            if (isset($url['_loop'])) {
+                unset($url['_loop']);
+
+                return parent::url($url, $full);
+            } elseif (isset($url['_name'])) {
+                $url['_name'] = $url['_name'] . '.' . LocaleMiddleware::getLocale(true);
+            }
         }
 
         return parent::url($url, $full);
+    }
+
+    public static function routeExists($url = null, $full = false)
+    {
+        // antiloop system
+        if (is_array($url)) {
+            $url['_loop'] = true;
+        }
+
+        return parent::routeExists($url);
     }
 }

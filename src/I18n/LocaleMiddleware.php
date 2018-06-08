@@ -63,7 +63,7 @@ class LocaleMiddleware
         }
 
         try {
-            $ary = array_merge(['controller' => $request->controller, 'action' => $request->action, 'lang' => $lang], $request->pass);
+            $ary = array_merge(['controller' => $request->getParam('controller'), 'action' => $request->getParam('action'), 'lang' => $lang], $request->pass);
             $newLocation = Router::url($ary, true);
 
             // Antiloop system
@@ -97,6 +97,8 @@ class LocaleMiddleware
         // date format
         DateTimeFormat::setDateTimeFormat(self::$_formats[$locale]['date'], self::$_formats[$locale]['time']);
         DateTimeFormat::setTimezone(self::$_formats[$locale]['timezone']);
+
+        $request->getSession()->delete('I18nUrl');
 
         return $next($request, $response);
     }
