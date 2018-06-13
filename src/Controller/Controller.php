@@ -14,7 +14,9 @@ class Controller
         $route = $event->getData(0);
 
         if (Router::routeExists($route)) {
-            $route['_loop'] = true;
+            if (is_array($route) && !isset($route['_loop'])) {
+                $route['_loop'] = true;
+            }
         }
 
         $url = Router::url($route);
