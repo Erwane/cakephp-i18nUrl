@@ -63,7 +63,7 @@ class LocaleMiddleware
         }
 
         try {
-            $ary = array_merge(['controller' => $request->getParam('controller'), 'action' => $request->getParam('action'), 'lang' => $lang], $request->pass);
+            $ary = array_merge(['controller' => $request->getParam('controller'), 'action' => $request->getParam('action'), 'lang' => $lang], $request->getParam('pass'));
             $newLocation = Router::url($ary, true);
 
             // Antiloop system
