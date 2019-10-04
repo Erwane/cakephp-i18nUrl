@@ -33,16 +33,6 @@ class I18nRoute extends CakeDashedRoute
         }
 
         $options['inflect'] = 'dasherize';
-        $options['persist'][] = 'lang';
-
-        if (!array_key_exists('lang', $options)) {
-            if (self::$_langRegEx === null &&
-                $langs = Configure::read('I18n.languages')
-            ) {
-                self::$_langRegEx = implode('|', array_keys(Hash::normalize($langs)));
-            }
-            $options['lang'] = self::$_langRegEx;
-        }
 
         parent::__construct($template, $defaults, $options);
     }
@@ -64,6 +54,7 @@ class I18nRoute extends CakeDashedRoute
 
             $options = $this->options;
             $options['_name'] = $newRouteName;
+            $options['lang'] = $lang;
 
             $new = new I18nRoute($route, $url, $options);
 

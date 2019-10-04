@@ -55,6 +55,7 @@ class RouteBuilder extends CakeRouteBuilder
 
         // append default language to route name
         $options['_name'] .= ':' . $defaultLang;
+        $options['lang'] = $defaultLang;
 
         $paths = [];
         foreach (Configure::read('I18n.languages') as $allowedLang) {
