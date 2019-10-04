@@ -64,7 +64,12 @@ class Router extends CakeRouter
 
                 return parent::url($url, $full);
             } elseif (isset($url['_name'])) {
-                $url['_name'] = $url['_name'] . ':' . LocaleMiddleware::getLocale(true);
+                // check if route exist without lang
+                $namedRoutes = array_keys(Router::getRouteCollection()->named());
+                if (!in_array($url['_name'], $namedRoutes)) {
+                    // else, add lang name
+                    $url['_name'] = $url['_name'] . ':' . LocaleMiddleware::getLocale(true);
+                }
             }
         }
 
