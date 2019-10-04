@@ -2,7 +2,7 @@
 namespace I18nUrl\View\Helper;
 
 use Cake\View\Helper;
-use I18nUrl\I18n\LocaleMiddleware;
+use I18nUrl\Middleware\LocaleMiddleware;
 use I18nUrl\Routing\Router;
 
 class I18nUrlHelper extends Helper

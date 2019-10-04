@@ -3,7 +3,7 @@ namespace I18nUrl\Routing;
 
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\Router as CakeRouter;
-use I18nUrl\I18n\LocaleMiddleware;
+use I18nUrl\Middleware\LocaleMiddleware;
 use LogicException;
 
 class Router extends CakeRouter
@@ -40,11 +40,7 @@ class Router extends CakeRouter
     }
 
     /**
-     * Create a RouteBuilder for the provided path.
-     *
-     * @param string $path The path to set the builder to.
-     * @param array $options The options for the builder
-     * @return \Cake\Routing\RouteBuilder
+     * {@inheritDoc}
      */
     public static function createRouteBuilder($path, array $options = [])
     {
@@ -68,7 +64,7 @@ class Router extends CakeRouter
 
                 return parent::url($url, $full);
             } elseif (isset($url['_name'])) {
-                $url['_name'] = $url['_name'] . '.' . LocaleMiddleware::getLocale(true);
+                $url['_name'] = $url['_name'] . ':' . LocaleMiddleware::getLocale(true);
             }
         }
 
