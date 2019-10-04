@@ -8,13 +8,6 @@ use Cake\Utility\Hash;
 class I18nRoute extends CakeDashedRoute
 {
     /**
-     * Regular expression for `lang` route element.
-     *
-     * @var string
-     */
-    protected static $_langRegEx = null;
-
-    /**
      * Constructor for a Route.
      *
      * @param string $template Template string with parameter placeholders
@@ -25,7 +18,14 @@ class I18nRoute extends CakeDashedRoute
      */
     public function __construct($template, $defaults = [], array $options = [])
     {
-        if (strpos($template, ':lang') === false) {
+        if (!isset($options['lang'])) {
+            return parent::__construct($template, $defaults, $options);
+        }
+
+        $routeLang = $options['lang'];
+        $isDefault = $routeLang === Configure::read('I18n.default');
+
+        if (strpos($template, ':lang') === false && !$isDefault) {
             $template = '/:lang' . $template;
         }
         if ($template === '/:lang/') {
@@ -33,6 +33,10 @@ class I18nRoute extends CakeDashedRoute
         }
 
         $options['inflect'] = 'dasherize';
+
+        if ($isDefault) {
+            unset($options['lang']);
+        }
 
         parent::__construct($template, $defaults, $options);
     }

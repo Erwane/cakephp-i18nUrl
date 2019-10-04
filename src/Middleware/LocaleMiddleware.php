@@ -1,6 +1,7 @@
 <?php
 namespace I18nUrl\Middleware;
 
+use Cake\Core\Configure;
 use Cake\I18n\I18n;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Routing\Exception\MissingRouteException;
@@ -48,13 +49,16 @@ class LocaleMiddleware
         $this->_loop = (int)$request->getSession()->read('I18nUrl.loop');
 
         $lang = $request->getParam('lang');
-        $accepted = $this->isAcceptedLanguage($lang);
 
-        if ($lang !== false && $accepted) {
-            return $this->_setLocale($lang, $next, $request, $response);
+        if ($lang === false) {
+            $lang = Configure::read('I18n.default');
         }
 
-        if ($lang === false || !$accepted) {
+        $accepted = $this->isAcceptedLanguage($lang);
+
+        if ($accepted) {
+            return $this->_setLocale($lang, $next, $request, $response);
+        } else {
             $lang = $this->getFirstAcceptedLanguage($request);
         }
 
