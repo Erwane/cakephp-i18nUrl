@@ -14,10 +14,25 @@
 namespace I18nUrl;
 
 use Cake\Core\BasePlugin;
+use Cake\Routing\Middleware\RoutingMiddleware;
+use I18nUrl\Middleware\LocaleMiddleware;
 
 /**
  * Plugin class for CakePHP 3.6.0 plugin collection.
  */
 class Plugin extends BasePlugin
 {
+    /**
+     * Add middleware
+     *
+     * @param \Cake\Http\MiddlewareQueue $middlewareQueue The queue
+     * @return \Cake\Http\MiddlewareQueue
+     */
+    public function middleware($middlewareQueue)
+    {
+        $middleware = new LocaleMiddleware();
+        $middlewareQueue->insertAfter(RoutingMiddleware::class, $middleware);
+
+        return $middlewareQueue;
+    }
 }
