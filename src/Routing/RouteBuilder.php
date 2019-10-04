@@ -1,46 +1,96 @@
 <?php
 namespace I18nUrl\Routing;
 
+use Cake\Core\Configure;
 use Cake\Routing\RouteBuilder as CakeRouteBuilder;
 
 class RouteBuilder extends CakeRouteBuilder
 {
+    /**
+     * {@inheritDoc}
+     */
+    public function scope($path, $params, $callback = null)
+    {
+        $lang = \Locale::getPrimaryLanguage(Configure::read('App.defaultLocale'));
+        $currentLangPath = [ $lang => $path ];
+
+        $i18nPath = $this->_params['_i18nPath'] ?? [];
+
+        if (is_array($params)) {
+            if (isset($params['_i18n'])) {
+                $currentLangPath = array_merge($currentLangPath, $params['_i18n']);
+            }
+        }
+
+        $i18nPath[] = $currentLangPath;
+        $oldParams = $this->_params;
+
+        $this->_params['_i18nPath'] = $i18nPath;
+        $scope = parent::scope($path, $params, $callback);
+
+        $this->_params = $oldParams;
+
+        return $scope;
+    }
 
     /**
-     * connect a new route like Cake RouterBuilder but create
-     * a named route foreach locales and return a RouteManipulator object
-     * who can handle all route manipulations methods
-     * @param string $route A string describing the template of the route
-     * @param array|string $defaults An array describing the default route parameters. These parameters will be used by default
-     *   and can supply routing parameters that are not dynamic. See above.
-     * @param array $options An array matching the named elements in the route to regular expressions which that
-     *   element should match. Also contains additional parameters such as which routed parameters should be
-     *   shifted into the passed arguments, supplying patterns for routing parameters and supplying the name of a
-     *   custom routing class.
-     * @return \Cake\Routing\Route\Route
-     * @throws \InvalidArgumentException
-     * @throws \BadMethodCallException
+     * {@inheritDoc}
      */
-   public function connect($routes, $defaults = [], array $options = [])
+    public function connect($route, $defaults = [], array $options = [])
    {
-        if (!is_array($routes)) {
-            $routes = array_fill_keys(Router::$locales, $routes);
+        if (empty($options['routeClass'])) {
+            $options['routeClass'] = $this->_routeClass;
         }
 
-        foreach (Router::$locales as $locale) {
-            if (!isset($options['_name'])) {
-                $options['_name'] = substr(sha1(json_encode($defaults)), 0, 12);
+        if ($options['routeClass'] !== I18nRoute::class) {
+            return parent::connect($route, $defaults, $options);
+        }
+
+        $defaultLang = \Locale::getPrimaryLanguage(Configure::read('App.defaultLocale'));
+
+        // set a name if don't exists
+        if (!isset($options['_name'])) {
+            $options['_name'] = substr(sha1(json_encode($defaults)), 0, 12);
+        }
+
+        // append default language to route name
+        $options['_name'] .= ':' . $defaultLang;
+
+        $paths = [];
+        foreach (Configure::read('I18n.languages') as $allowedLang) {
+            $paths[$allowedLang] = '';
+            foreach ($this->_params['_i18nPath'] as $langs) {
+                if (isset($langs[$allowedLang])) {
+                    $paths[$allowedLang] .= $langs[$allowedLang];
+                } else {
+                    $paths[$allowedLang] .= $langs[$defaultLang];
+                }
             }
 
-            // set vars for route
-            $currentDefaults = $defaults;
-            $currentOptions = $options;
-
-            $currentOptions['_name'] .= '.' . $locale;
-
-            $route = parent::connect($routes[$locale], $currentDefaults, $currentOptions);
+            $paths[$allowedLang] = str_replace('//', '/', $paths[$allowedLang]);
         }
 
-        return new RouteManipulator($options['_name'], $this->_collection);
-   }
+        $newRoute = parent::connect($route, $defaults, $options);
+        $newRoute->originaleRoute = $route;
+        $newRoute->paths = $paths;
+
+        return $newRoute;
+    }
+
+    /**
+     * Unset unused params before make route.
+     *
+     * {@inheritDoc}
+     */
+    protected function _makeRoute($route, $defaults, $options)
+    {
+        $oldParams = $this->_params;
+        unset($this->_params['_i18n'], $this->_params['_i18nPath']);
+
+        $route = parent::_makeRoute($route, $defaults, $options);
+
+        $this->_params = $oldParams;
+
+        return $route;
+    }
 }
