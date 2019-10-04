@@ -1,5 +1,5 @@
 <?php
-namespace I18nUrl\I18n;
+namespace I18nUrl\Middleware;
 
 use Cake\I18n\I18n;
 use Cake\Http\Exception\NotFoundException;
