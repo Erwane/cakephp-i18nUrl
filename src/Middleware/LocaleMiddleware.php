@@ -1,17 +1,25 @@
 <?php
+declare(strict_types=1);
+
 namespace I18nUrl\Middleware;
 
 use Cake\Core\Configure;
+use Cake\Database\Type;
+use Cake\I18n\Date as CakeDate;
+use Cake\I18n\FrozenDate;
 use Cake\I18n\I18n;
+use Cake\I18n\Time;
+use Cake\I18n\FrozenTime;
 use Cake\Http\Exception\NotFoundException;
 use Cake\Routing\Exception\MissingRouteException;
 use I18nUrl\Routing\Router;
-use Ecl\I18n\DateTimeFormat;
 use Locale;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
-class LocaleMiddleware
+class LocaleMiddleware implements MiddlewareInterface
 {
     private $_loop = 0;
 
@@ -40,24 +48,24 @@ class LocaleMiddleware
      * @param callable $next Callback to invoke the next middleware.
      * @return \Psr\Http\Message\ResponseInterface A response
      */
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, $next)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ($request->getParam('plugin') === 'DebugKit') {
-            return $next($request, $response);
+            return $handler->handle($request);
         }
 
         $this->_loop = (int)$request->getSession()->read('I18nUrl.loop');
 
         $lang = $request->getParam('lang');
 
-        if ($lang === false) {
+        if (empty($lang)) {
             $lang = Configure::read('I18n.default');
         }
 
         $accepted = $this->isAcceptedLanguage($lang);
 
         if ($accepted) {
-            return $this->_setLocale($lang, $next, $request, $response);
+            return $this->_setLocale($lang, $request, $handler);
         } else {
             $lang = $this->getFirstAcceptedLanguage($request);
         }
@@ -81,7 +89,7 @@ class LocaleMiddleware
         }
 
         // return new response object with location
-        return $response = $r;
+        $response = $handler->handle($request);
     }
 
     /**
@@ -92,19 +100,28 @@ class LocaleMiddleware
      * @param \Psr\Http\Message\ResponseInterface       $response   The response.
      * @return \Psr\Http\Message\ResponseInterface      A response
      */
-    protected function _setLocale($lang, $next, $request, $response)
+    protected function _setLocale($lang, ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         // Set locale
         $locale = $this->_locales[$lang];
         I18n::setLocale($locale);
 
         // date format
-        DateTimeFormat::setDateTimeFormat(self::$_formats[$locale]['date'], self::$_formats[$locale]['time']);
-        DateTimeFormat::setTimezone(self::$_formats[$locale]['timezone']);
+        $dateFormat = self::$_formats[$locale]['date'];
+        $timeFormat = self::$_formats[$locale]['time'];
+        $dateTimeFormat = $dateFormat . ' ' . $timeFormat;
+
+        CakeDate::setToStringFormat($dateFormat);
+        FrozenDate::setToStringFormat($dateFormat);
+        Type::build('date')->useLocaleParser()->setLocaleFormat($dateFormat);
+
+        Time::setToStringFormat($dateTimeFormat);
+        FrozenTime::setToStringFormat($dateTimeFormat);
+        Type::build('datetime')->useLocaleParser()->setLocaleFormat($dateTimeFormat);
 
         $request->getSession()->delete('I18nUrl');
 
-        return $next($request, $response);
+        return $handler->handle($request);
     }
 
     /**

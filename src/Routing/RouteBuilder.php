@@ -2,6 +2,7 @@
 namespace I18nUrl\Routing;
 
 use Cake\Core\Configure;
+use Cake\Routing\Route\Route as CakeRoute;
 use Cake\Routing\RouteBuilder as CakeRouteBuilder;
 
 class RouteBuilder extends CakeRouteBuilder
@@ -36,7 +37,7 @@ class RouteBuilder extends CakeRouteBuilder
     /**
      * {@inheritDoc}
      */
-    public function connect($route, $defaults = [], array $options = [])
+    public function connect($route, $defaults = [], array $options = []): CakeRoute
    {
         if (empty($options['routeClass'])) {
             $options['routeClass'] = $this->_routeClass;
@@ -83,7 +84,7 @@ class RouteBuilder extends CakeRouteBuilder
      *
      * {@inheritDoc}
      */
-    protected function _makeRoute($route, $defaults, $options)
+    protected function _makeRoute($route, $defaults, $options): CakeRoute
     {
         $oldParams = $this->_params;
         unset($this->_params['_i18n'], $this->_params['_i18nPath']);

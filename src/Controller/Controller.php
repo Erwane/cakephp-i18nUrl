@@ -7,7 +7,7 @@ use I18nUrl\Routing\Router;
 
 class Controller
 {
-    public function beforeRedirect(Event $event)
+    public static function beforeRedirect(Event $event)
     {
         $response = $event->getData(1);
 

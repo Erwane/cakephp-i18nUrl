@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
+
 namespace I18nUrl\Routing;
 
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\Router as CakeRouter;
+use Cake\Routing\RouteBuilder as CakeRouteBuilder;
 use I18nUrl\Middleware\LocaleMiddleware;
 use LogicException;
 
@@ -42,7 +45,7 @@ class Router extends CakeRouter
     /**
      * {@inheritDoc}
      */
-    public static function createRouteBuilder($path, array $options = [])
+    public static function createRouteBuilder(string $path, array $options = []): CakeRouteBuilder
     {
         $defaults = [
             'routeClass' => static::defaultRouteClass(),
@@ -56,7 +59,7 @@ class Router extends CakeRouter
         ]);
     }
 
-    public static function url($url = null, $full = false)
+    public static function url($url = null, bool $full = false): string
     {
         if (is_array($url)) {
             if (isset($url['_loop'])) {
@@ -76,7 +79,7 @@ class Router extends CakeRouter
         return parent::url($url, $full);
     }
 
-    public static function routeExists($url = null, $full = false)
+    public static function routeExists($url = null, bool $full = false): bool
     {
         // antiloop system
         if (is_array($url)) {

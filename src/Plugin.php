@@ -14,6 +14,7 @@
 namespace I18nUrl;
 
 use Cake\Core\BasePlugin;
+use Cake\Http\MiddlewareQueue;
 use Cake\Routing\Middleware\RoutingMiddleware;
 use I18nUrl\Middleware\LocaleMiddleware;
 
@@ -28,7 +29,7 @@ class Plugin extends BasePlugin
      * @param \Cake\Http\MiddlewareQueue $middlewareQueue The queue
      * @return \Cake\Http\MiddlewareQueue
      */
-    public function middleware($middlewareQueue)
+    public function middleware(MiddlewareQueue $middlewareQueue): MiddlewareQueue
     {
         $middleware = new LocaleMiddleware();
         $middlewareQueue->insertAfter(RoutingMiddleware::class, $middleware);
